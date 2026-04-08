@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fantoche Memory Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* PALETA DE COLORES PREMIUM FANTOCHE */
+            --fantoche-red: #E31D2B;
+            --fantoche-red-dark: #B31722;
+            --fantoche-gold: #D4AF37;
+            --bg-color: #F8F9FA;
+            --text-color: #1E272E;
+            --card-back-bg: linear-gradient(135deg, #E31D2B 0%, #B31722 100%);
+            --card-front-bg: #FFFFFF;
+            --shadow-sm: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-md: 0 10px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.12);
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        * {
+            box-sizing: border-box;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #f0f2f5 100%);
+        }
+
+        /* --- HEADER ADAPTATIVO --- */
+        header {
+            width: 100%;
+            max-width: 800px;
+            padding: clamp(20px, 5vh, 40px) 20px clamp(10px, 2vh, 20px);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .brand-logo-img {
+            max-width: clamp(150px, 45vw, 250px);
+            height: auto;
+            margin-bottom: clamp(5px, 2vh, 15px);
+            filter: drop-shadow(2px 5px 8px rgba(0,0,0,0.15));
+            transition: transform 0.3s ease;
+        }
+
+        .brand-logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        .game-title {
+            font-size: clamp(0.75rem, 2.8vw, 1rem);
+            color: #7f8c8d;
+            font-weight: 400;
+            margin-top: 0;
+            margin-bottom: clamp(15px, 4vh, 30px);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: clamp(10px, 3vw, 20px);
+            margin-bottom: clamp(15px, 4vh, 30px);
+        }
+
+        .stat-box {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-md);
+            font-size: clamp(0.7rem, 2.5vw, 0.95rem);
+            color: #4b5563;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .stat-box strong {
+            color: var(--fantoche-red);
+            font-size: 1.2rem;
+        }
+
+        .action-btn {
+            background: var(--fantoche-red);
+            color: white;
+            border: none;
+            padding: clamp(10px, 2vh, 14px) clamp(20px, 5vw, 35px);
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 8px 15px rgba(227, 29, 43, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 20px rgba(227, 29, 43, 0.3);
+            background: var(--fantoche-red-dark);
+        }
+
+        .action-btn:active {
+            transform: translateY(1px);
+        }
+
+        .action-btn:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* --- TABLERO INTELIGENTE (RESPONSIVE GRID) --- */
+        .memory-game {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(8px, 2vw, 20px);
+            width: 95vw;
+            max-width: 700px;
+            padding: clamp(10px, 3vw, 25px);
+            perspective: 1200px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 500px) {
+            .memory-game {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 350px) {
+            .memory-game {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* --- CARTAS ESTILIZADAS --- */
+        .card {
+            aspect-ratio: 1 / 1;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            border-radius: var(--radius-md);
+        }
+
+        .card.flip {
+            transform: rotateY(180deg);
+            cursor: default;
+        }
+
+        .card.matched {
+            animation: pulse-match 0.5s ease;
+        }
+
+        @keyframes pulse-match {
+            0% { transform: rotateY(180deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+            100% { transform: rotateY(180deg) scale(1); }
+        }
+
+        .front, .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            border: 2px solid white;
+        }
+
+        /* --- DORSO DE LA CARTA --- */
+        .back {
+            background: var(--card-back-bg);
+            color: white;
+            transform: rotateY(0deg);
+            z-index: 2;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 20%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 20%);
+        }
+
+        .back::after {
+            content: 'F';
+            font-size: clamp(2rem, 10vw, 3.5rem);
+            font-weight: 700;
+            opacity: 0.15;
+            font-family: serif;
+        }
+
+        /* --- FRENTE DE LA CARTA --- */
+        .front {
+            background-color: var(--card-front-bg);
+            transform: rotateY(180deg);
+            padding: 12%;
+        }
+
+        .front img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.12));
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .front img {
+            transform: scale(1.1);
+        }
+
+        /* --- OVERLAY DE VICTORIA --- */
+        .win-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(30, 39, 46, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .win-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .win-modal {
+            background: white;
+            padding: clamp(30px, 6vh, 60px) clamp(20px, 5vw, 50px);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.8);
+            transition: var(--transition);
+            max-width: 90%;
+            width: 450px;
+        }
+
+        .win-overlay.show .win-modal {
+            transform: scale(1);
+        }
+
+        .win-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .win-modal h2 {
+            color: var(--fantoche-red);
+            font-size: clamp(1.8rem, 6vw, 2.5rem);
+            margin: 0 0 15px;
+            font-weight: 700;
+        }
+
+        .win-modal p {
+            color: #4b5563;
+            margin-bottom: 35px;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            line-height: 1.6;
+        }
+
+        /* --- MENSAJE DE ORIENTACIÓN --- */
+        @media (max-height: 450px) and (orientation: landscape) {
+            header { padding: 10px; }
+            .brand-logo-img { max-width: 150px; }
+            .memory-game { margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="img/LOGOFANTOCHE.png" alt="Logo Fantoche" class="brand-logo-img">
+        <p class="game-title">Memory Challenge</p>
+        
+        <div class="stats-container">
+            <div class="stat-box">
+                <span>Movimientos:</span>
+                <strong id="moves">0</strong>
+            </div>
+            <button class="action-btn" id="resetBtn" onclick="resetGame()">Reiniciar</button>
+        </div>
+    </header>
+
+    <div class="memory-game" id="gameBoard"></div>
+
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-modal">
+            <span class="win-icon">🏆</span>
+            <h2>¡EXCELENTE!</h2>
+            <p>Demostraste ser un verdadero fan de Fantoche.<br>Completaste el desafío en <strong id="final-moves">0</strong> movimientos.</p>
+            <button class="action-btn" onclick="resetGame()">Jugar de Nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ==========================================
+         * CONFIGURACIÓN DE IMÁGENES
+         * ==========================================
+         */
+        const brandImages = [
+            'img/fantochecunitamininegro.jpg', 
+            'img/fantochesimpleday.png',
+            'img/fantochesport.jpg',
+            'img/fantochetriplenegro.jpg',
+            'img/fantochetriplenight.png',
+            'img/fantohce70cacao.jpg'
+        ];
+
+        // LÓGICA DEL JUEGO
+        let cards = [...brandImages, ...brandImages];
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+        let moves = 0;
+        let matchedPairs = 0;
+        const totalPairs = brandImages.length;
+
+        const board = document.getElementById('gameBoard');
+        const movesDisplay = document.getElementById('moves');
+        const winOverlay = document.getElementById('winOverlay');
+        const finalMovesDisplay = document.getElementById('final-moves');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createBoard() {
+            board.innerHTML = '';
+            const shuffledCards = shuffle([...cards]);
+            
+            // Bloqueamos el tablero para el vistazo inicial
+            lockBoard = true;
+            resetBtn.disabled = true;
+
+            shuffledCards.forEach(imgUrl => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.classList.add('flip'); // Empezamos mostrándolas
+                card.dataset.id = imgUrl;
+                
+                card.innerHTML = `
+                    <div class="back"></div>
+                    <div class="front">
+                        <img src="${imgUrl}" alt="Fantoche Item" onerror="this.src='https://via.placeholder.com/150/ffffff/E31D2B?text=Falta+Imagen'">
+                    </div>
+                `;
+                
+                card.addEventListener('click', flipCard);
+                board.appendChild(card);
+            });
+
+            // VISTAZO INICIAL: 3 segundos antes de voltear todo e iniciar
+            setTimeout(() => {
+                const allCards = document.querySelectorAll('.card');
+                allCards.forEach(card => card.classList.remove('flip'));
+                lockBoard = false;
+                resetBtn.disabled = false;
+            }, 3000);
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            this.classList.add('flip');
+
+            if (!hasFlippedCard) {
+                hasFlippedCard = true;
+                firstCard = this;
+                return;
+            }
+
+            secondCard = this;
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            moves++;
+            movesDisplay.innerText = moves;
+
+            let isMatch = firstCard.dataset.id === secondCard.dataset.id;
+            isMatch ? disableCards() : unflipCards();
+        }
+
+        function disableCards() {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            
+            matchedPairs++;
+
+            if (matchedPairs === totalPairs) {
+                setTimeout(showWinScreen, 800);
+            }
+
+            resetBoardState();
+        }
+
+        function unflipCards() {
+            lockBoard = true;
+            setTimeout(() => {
+                firstCard.classList.remove('flip');
+                secondCard.classList.remove('flip');
+                resetBoardState();
+            }, 1000);
+        }
+
+        function resetBoardState() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        function showWinScreen() {
+            finalMovesDisplay.innerText = moves;
+            winOverlay.classList.add('show');
+        }
+
+        function resetGame() {
+            moves = 0;
+            matchedPairs = 0;
+            movesDisplay.innerText = '0';
+            winOverlay.classList.remove('show');
+            
+            board.style.opacity = '0';
+            board.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                createBoard();
+                board.style.transition = 'all 0.6s ease';
+                board.style.opacity = '1';
+                board.style.transform = 'translateY(0)';
+            }, 400);
+        }
+
+        document.addEventListener('DOMContentLoaded', createBoard);
+
+    </script>
+</body>
+</html>
