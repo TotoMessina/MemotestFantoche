@@ -137,23 +137,24 @@
         .memory-game {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: clamp(8px, 2vw, 20px);
+            gap: clamp(8px, 2vw, 15px);
             width: 95vw;
-            max-width: 700px;
-            padding: clamp(10px, 3vw, 25px);
+            max-width: 800px;
+            padding: clamp(10px, 3vw, 20px);
             perspective: 1200px;
             margin-bottom: 40px;
         }
 
-        @media (max-width: 500px) {
+        @media (min-width: 600px) {
             .memory-game {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(5, 1fr);
             }
         }
 
-        @media (max-width: 350px) {
+        @media (max-width: 400px) {
             .memory-game {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
             }
         }
 
@@ -331,12 +332,16 @@
          * ==========================================
          */
         const brandImages = [
-            'img/fantochecunitamininegro.jpg', 
-            'img/fantochesimpleday.png',
-            'img/fantochesport.jpg',
-            'img/fantochetriplenegro.jpg',
-            'img/fantochetriplenight.png',
-            'img/fantohce70cacao.jpg'
+            'img/1.png', 
+            'img/2.png',
+            'img/3.png',
+            'img/4.png',
+            'img/5.png',
+            'img/6.png',
+            'img/7.png',
+            'img/8.png',
+            'img/9.png',
+            'img/10.png'
         ];
 
         // LÓGICA DEL JUEGO
@@ -387,13 +392,13 @@
                 board.appendChild(card);
             });
 
-            // VISTAZO INICIAL: 3 segundos antes de voltear todo e iniciar
+            // VISTAZO INICIAL: 4 segundos antes de voltear todo e iniciar
             setTimeout(() => {
                 const allCards = document.querySelectorAll('.card');
                 allCards.forEach(card => card.classList.remove('flip'));
                 lockBoard = false;
                 resetBtn.disabled = false;
-            }, 3000);
+            }, 4000);
         }
 
         function flipCard() {
