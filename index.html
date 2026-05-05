@@ -136,8 +136,8 @@
         /* --- TABLERO INTELIGENTE (RESPONSIVE GRID) --- */
         .memory-game {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: clamp(6px, 1.5vw, 12px);
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(8px, 2vw, 15px);
             width: 95vw;
             max-width: 800px;
             padding: clamp(10px, 3vw, 20px);
@@ -149,8 +149,8 @@
 
         @media (max-width: 480px) {
             .memory-game {
-                grid-template-columns: repeat(5, 1fr);
-                gap: 6px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
                 max-width: 95vw;
                 padding: 10px;
             }
@@ -306,7 +306,7 @@
 <body>
 
     <header>
-        <img src="img/LOGOFANTOCHE.png" alt="Logo Fantoche" class="brand-logo-img">
+        <img src="img/LOGOFANTOCHE.jpeg" alt="Logo Fantoche" class="brand-logo-img">
         <p class="game-title">Memory Challenge</p>
         
         <div class="stats-container">
@@ -349,7 +349,8 @@
             'img/2.png',
             'img/3.png',
             'img/4.png',
-            'img/5.png'
+            'img/5.png',
+            'img/6.png'
         ];
 
         // LÓGICA DEL JUEGO
