@@ -136,8 +136,8 @@
         /* --- TABLERO INTELIGENTE (RESPONSIVE GRID) --- */
         .memory-game {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: clamp(8px, 2vw, 15px);
+            grid-template-columns: repeat(5, 1fr);
+            gap: clamp(6px, 1.5vw, 12px);
             width: 95vw;
             max-width: 800px;
             padding: clamp(10px, 3vw, 20px);
@@ -145,16 +145,20 @@
             margin-bottom: 40px;
         }
 
-        @media (min-width: 600px) {
+
+
+        @media (max-width: 480px) {
             .memory-game {
                 grid-template-columns: repeat(5, 1fr);
+                gap: 6px;
+                max-width: 95vw;
+                padding: 10px;
             }
-        }
-
-        @media (max-width: 400px) {
-            .memory-game {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 8px;
+            .card {
+                border-radius: 8px;
+            }
+            .front {
+                padding: 8%;
             }
         }
 
@@ -325,6 +329,15 @@
         </div>
     </div>
 
+    <div class="win-overlay" id="loseOverlay">
+        <div class="win-modal">
+            <span class="win-icon">😢</span>
+            <h2>Ups, lo siento</h2>
+            <p>Has alcanzado el límite de intentos fallidos.<br>¡No te rindas, vuelve a intentarlo!</p>
+            <button class="action-btn" onclick="resetGame()">Volver a jugar</button>
+        </div>
+    </div>
+
     <script>
         /**
          * ==========================================
@@ -336,12 +349,7 @@
             'img/2.png',
             'img/3.png',
             'img/4.png',
-            'img/5.png',
-            'img/6.png',
-            'img/7.png',
-            'img/8.png',
-            'img/9.png',
-            'img/10.png'
+            'img/5.png'
         ];
 
         // LÓGICA DEL JUEGO
@@ -356,8 +364,11 @@
         const board = document.getElementById('gameBoard');
         const movesDisplay = document.getElementById('moves');
         const winOverlay = document.getElementById('winOverlay');
+        const loseOverlay = document.getElementById('loseOverlay');
         const finalMovesDisplay = document.getElementById('final-moves');
         const resetBtn = document.getElementById('resetBtn');
+
+        let failedAttempts = 0;
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -422,7 +433,21 @@
             movesDisplay.innerText = moves;
 
             let isMatch = firstCard.dataset.id === secondCard.dataset.id;
-            isMatch ? disableCards() : unflipCards();
+            
+            if (isMatch) {
+                disableCards();
+            } else {
+                failedAttempts++;
+                unflipCards();
+                if (failedAttempts >= 3) {
+                    setTimeout(showLoseScreen, 800);
+                }
+            }
+        }
+
+        function showLoseScreen() {
+            loseOverlay.classList.add('show');
+            lockBoard = true;
         }
 
         function disableCards() {
@@ -463,8 +488,10 @@
         function resetGame() {
             moves = 0;
             matchedPairs = 0;
+            failedAttempts = 0;
             movesDisplay.innerText = '0';
             winOverlay.classList.remove('show');
+            loseOverlay.classList.remove('show');
             
             board.style.opacity = '0';
             board.style.transform = 'translateY(20px)';
